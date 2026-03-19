@@ -121,7 +121,28 @@ export default function CameraPage() {
 
       {/* Camera viewfinder */}
       <div className="flex-1 relative overflow-hidden">
-        {cameraError ? (
+        {/* video is always mounted so videoRef is always available */}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          autoPlay
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ display: isReady ? 'block' : 'none' }}
+        />
+
+        {isReady && <WatermarkOverlay data={watermarkData} />}
+
+        {/* Loading overlay */}
+        {isStarting && !cameraError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+            <p className="text-gray-400 text-sm">正在启动相机…</p>
+          </div>
+        )}
+
+        {/* Error overlay */}
+        {cameraError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -137,22 +158,6 @@ export default function CameraPage() {
               重试
             </button>
           </div>
-        ) : isStarting ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
-            <p className="text-gray-400 text-sm">正在启动相机…</p>
-          </div>
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              playsInline
-              muted
-              autoPlay
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {isReady && <WatermarkOverlay data={watermarkData} />}
-          </>
         )}
       </div>
 

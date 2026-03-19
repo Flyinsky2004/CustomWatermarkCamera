@@ -37,19 +37,23 @@ export function useCamera() {
 
     const video = videoRef.current;
     if (!video) {
-      // videoRef not mounted yet — retry once after a tick
-      await new Promise((r) => setTimeout(r, 100));
-      const v2 = videoRef.current;
-      if (!v2) {
-        setError('视频元素未就绪，请刷新重试');
-        setIsStarting(false);
-        return;
-      }
-      attachStream(v2, stream, setIsReady, setIsStarting);
+      setError('视频元素未就绪，请刷新重试');
+      setIsStarting(false);
       return;
     }
 
-    attachStream(video, stream, setIsReady, setIsStarting);
+    video.srcObject = stream;
+    video.muted = true;
+
+    const onCanPlay = () => {
+      video.removeEventListener('canplay', onCanPlay);
+      const p = video.play();
+      if (p) p.catch(() => {});
+      setIsReady(true);
+      setIsStarting(false);
+    };
+
+    video.addEventListener('canplay', onCanPlay);
   }, []);
 
   const stopCamera = useCallback(() => {
@@ -60,34 +64,4 @@ export function useCamera() {
   }, []);
 
   return { videoRef, isReady, isStarting, error, startCamera, stopCamera };
-}
-
-function attachStream(
-  video: HTMLVideoElement,
-  stream: MediaStream,
-  setIsReady: (v: boolean) => void,
-  setIsStarting: (v: boolean) => void,
-) {
-  video.srcObject = stream;
-  video.setAttribute('playsinline', 'true');
-  video.muted = true;
-
-  // Use canplay event — more reliable than awaiting play() on mobile
-  const onCanPlay = () => {
-    video.removeEventListener('canplay', onCanPlay);
-    // play() may return a promise; ignore rejection (autoplay policy)
-    const p = video.play();
-    if (p) p.catch(() => {});
-    setIsReady(true);
-    setIsStarting(false);
-  };
-
-  video.addEventListener('canplay', onCanPlay);
-
-  // Fallback: if canplay never fires within 5s, try anyway
-  setTimeout(() => {
-    if (video.readyState >= 2) {
-      onCanPlay();
-    }
-  }, 5000);
 }
