@@ -19,7 +19,7 @@ export function useGeolocation() {
     error: null,
   });
 
-  const fetchLocation = useCallback(async (enableAmap: boolean, amapKey: string) => {
+  const fetchLocation = useCallback(async (enableAmap: boolean, amapKey: string, amapSecurityKey = '') => {
     if (!navigator.geolocation) {
       setState((s) => ({ ...s, error: '设备不支持定位' }));
       return;
@@ -38,7 +38,7 @@ export function useGeolocation() {
 
         if (enableAmap && amapKey) {
           try {
-            const address = await reverseGeocode(coords.lat, coords.lng, amapKey);
+            const address = await reverseGeocode(coords.lat, coords.lng, amapKey, amapSecurityKey);
             if (address) locationText = address;
           } catch {
             // fallback to coordinates

@@ -25,45 +25,42 @@ export default function WatermarkOverlay({ data }: Props) {
   // suppress unused warning
   void tick;
 
+  const shadow = '0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)';
+
   return (
-    <div className="absolute bottom-0 left-0 right-0 select-none" style={{ pointerEvents: 'none' }}>
-      <div
-        className="relative"
-        style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(2px)' }}
-      >
-        {/* Left orange accent bar */}
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500" />
+    <div className="absolute bottom-0 left-0 right-0 select-none px-6 pb-7" style={{ pointerEvents: 'none' }}>
+      <div className="flex items-end justify-between">
+        {/* Left: time + location + note */}
+        <div className="flex-1 min-w-0 pr-4">
+          <p
+            className="text-white font-bold leading-tight tracking-wide"
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.15rem', textShadow: shadow }}
+          >
+            {formatDisplayDate(resolvedTime)}
+          </p>
+          <p
+            className="leading-tight mt-0.5"
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.95rem', color: '#e5e7eb', textShadow: shadow }}
+          >
+            {formatDisplayTime(resolvedTime)}
+          </p>
 
-        <div className="flex items-start justify-between px-5 py-3 pl-6">
-          {/* Left: time + location + note */}
-          <div className="flex-1 min-w-0 pr-4">
-            <p
-              className="text-white font-bold leading-tight tracking-wide"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '1.15rem' }}
-            >
-              {formatDisplayDate(resolvedTime)}
-            </p>
-            <p
-              className="text-gray-300 leading-tight mt-0.5"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.95rem' }}
-            >
-              {formatDisplayTime(resolvedTime)}
-            </p>
+          {data.location && (
+            <p className="text-xs mt-1.5 truncate" style={{ color: '#d1d5db', textShadow: shadow }}>{data.location}</p>
+          )}
 
-            {data.location ? (
-              <p className="text-gray-400 text-xs mt-1.5 truncate">{data.location}</p>
-            ) : null}
-
-            {data.note ? (
-              <p className="text-orange-400 text-xs mt-0.5 truncate">{data.note}</p>
-            ) : null}
-          </div>
-
-          {/* Right: app name */}
-          <div className="flex-shrink-0 flex flex-col items-end pt-0.5">
-            <span className="text-orange-500 font-bold text-xs tracking-widest">水印相机</span>
-          </div>
+          {data.note && (
+            <p className="text-xs mt-0.5 truncate" style={{ color: '#fb923c', textShadow: shadow }}>{data.note}</p>
+          )}
         </div>
+
+        {/* Right: app name */}
+        <span
+          className="flex-shrink-0 font-bold text-xs tracking-widest"
+          style={{ color: '#fb923c', textShadow: shadow }}
+        >
+          水印相机
+        </span>
       </div>
     </div>
   );

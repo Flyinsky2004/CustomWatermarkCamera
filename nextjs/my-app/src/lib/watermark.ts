@@ -16,54 +16,62 @@ export function drawWatermark(
   // Draw video frame
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  const dpr = canvas.width / 390; // scale relative to ~390px base width
-  const barH = Math.round(130 * dpr);
-  const y = canvas.height - barH;
-  const pad = Math.round(16 * dpr);
+  const dpr = canvas.width / 390;
+  const pad = Math.round(28 * dpr);
+  const textX = pad + Math.round(16 * dpr);
+  const bot = canvas.height - Math.round(36 * dpr);
 
-  // Watermark background
-  ctx.fillStyle = 'rgba(0,0,0,0.72)';
-  ctx.fillRect(0, y, canvas.width, barH);
+  // Helper: draw text with drop shadow for legibility on any background
+  const drawText = (text: string, x: number, y: number) => {
+    ctx.shadowColor = 'rgba(0,0,0,0.95)';
+    ctx.shadowBlur = Math.round(8 * dpr);
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = Math.round(1 * dpr);
+    ctx.fillText(text, x, y);
+    // Second pass — sharper inner shadow
+    ctx.shadowBlur = Math.round(3 * dpr);
+    ctx.fillText(text, x, y);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  };
 
-  // Left accent bar
-  ctx.fillStyle = '#f97316';
-  ctx.fillRect(0, y, Math.round(4 * dpr), barH);
+  const maxW = canvas.width - textX - Math.round(120 * dpr);
+
+  // Note (bottom line)
+  let curY = bot;
+  if (data.note) {
+    ctx.font = `${Math.round(16 * dpr)}px "IBM Plex Sans", sans-serif`;
+    ctx.fillStyle = '#fb923c';
+    drawText(truncateText(ctx, data.note, maxW), textX, curY);
+    curY -= Math.round(24 * dpr);
+  }
+
+  // Location
+  if (data.location) {
+    ctx.font = `${Math.round(16 * dpr)}px "IBM Plex Sans", sans-serif`;
+    ctx.fillStyle = '#e5e7eb';
+    drawText(truncateText(ctx, data.location, maxW), textX, curY);
+    curY -= Math.round(28 * dpr);
+  }
+
+  // Time
+  const timeStr = formatDisplayTime(resolvedTime);
+  ctx.font = `${Math.round(20 * dpr)}px "JetBrains Mono", monospace`;
+  ctx.fillStyle = '#e5e7eb';
+  drawText(timeStr, textX, curY);
+  curY -= Math.round(34 * dpr);
 
   // Date
   const dateStr = formatDisplayDate(resolvedTime);
   ctx.font = `bold ${Math.round(28 * dpr)}px "JetBrains Mono", monospace`;
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(dateStr, pad + Math.round(10 * dpr), y + Math.round(38 * dpr));
+  drawText(dateStr, textX, curY);
 
-  // Time
-  const timeStr = formatDisplayTime(resolvedTime);
-  ctx.font = `${Math.round(20 * dpr)}px "JetBrains Mono", monospace`;
-  ctx.fillStyle = '#d1d5db';
-  ctx.fillText(timeStr, pad + Math.round(10 * dpr), y + Math.round(65 * dpr));
-
-  // Location
-  if (data.location) {
-    ctx.font = `${Math.round(16 * dpr)}px "IBM Plex Sans", sans-serif`;
-    ctx.fillStyle = '#9ca3af';
-    const maxW = canvas.width - pad * 2 - Math.round(10 * dpr) - Math.round(100 * dpr);
-    const locText = truncateText(ctx, data.location, maxW);
-    ctx.fillText(locText, pad + Math.round(10 * dpr), y + Math.round(90 * dpr));
-  }
-
-  // Note
-  if (data.note) {
-    ctx.font = `${Math.round(16 * dpr)}px "IBM Plex Sans", sans-serif`;
-    ctx.fillStyle = '#f97316';
-    const maxW = canvas.width - pad * 2 - Math.round(10 * dpr) - Math.round(100 * dpr);
-    const noteText = truncateText(ctx, data.note, maxW);
-    ctx.fillText(noteText, pad + Math.round(10 * dpr), y + Math.round(112 * dpr));
-  }
-
-  // App name (right side)
+  // App name (bottom right)
   ctx.font = `bold ${Math.round(14 * dpr)}px "IBM Plex Sans", sans-serif`;
-  ctx.fillStyle = '#f97316';
+  ctx.fillStyle = '#fb923c';
   ctx.textAlign = 'right';
-  ctx.fillText('水印相机', canvas.width - pad, y + Math.round(38 * dpr));
+  drawText('水印相机', canvas.width - pad, bot);
   ctx.textAlign = 'left';
 }
 

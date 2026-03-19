@@ -77,6 +77,8 @@ export default function NoteInput({ value, onChange, history }: Props) {
             onChange={(e) => onChange(e.target.value)}
             placeholder="添加备注…"
             maxLength={100}
+            autoComplete="off"
+            data-form-type="other"
             className="w-full h-9 rounded-lg px-3 text-sm text-white placeholder-gray-500 outline-none focus:ring-1 focus:ring-orange-500 transition-all"
             style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
